@@ -6,9 +6,10 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { LinkEntity } from "./link.entity";
 import { LinkRepository } from "./link.repository";
+import { UploadModule } from "../upload/upload.module";
 
 @Module({
-  imports: [DatabaseModule, StorageModule, TypeOrmModule.forFeature([LinkEntity])],
+  imports: [DatabaseModule, StorageModule, UploadModule, TypeOrmModule.forFeature([LinkEntity])],
   providers: [LinkRepository, LinkService],
   controllers: [LinkController],
   exports: [LinkService],
