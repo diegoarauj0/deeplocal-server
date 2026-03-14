@@ -10,7 +10,7 @@ export class LinkRepository {
     private readonly linkRepository: MongoRepository<LinkEntity>,
   ) {}
 
-  public deleteLink(link: LinkEntity): Promise<DeleteResult> {
+  public delete(link: LinkEntity): Promise<DeleteResult> {
     return this.linkRepository.delete({ ID: link.ID });
   }
 
@@ -38,19 +38,19 @@ export class LinkRepository {
     return this.linkRepository.findOne({ where: { userId }, order: { position: "DESC" } });
   }
 
-  public linkCount(): Promise<number> {
+  public count(): Promise<number> {
     return this.linkRepository.count();
   }
 
-  public findAllLinksByUserId(userId: string, order: "DESC" | "ASC"): Promise<LinkEntity[]> {
+  public findByUserId(userId: string, order: "DESC" | "ASC"): Promise<LinkEntity[]> {
     return this.linkRepository.find({ where: { userId }, order: { position: order } });
   }
 
-  public findLinkById(id: string): Promise<LinkEntity | null> {
+  public findOneById(id: string): Promise<LinkEntity | null> {
     return this.linkRepository.findOne({ where: { ID: id } });
   }
 
-  public saveLink(link: LinkEntity): Promise<LinkEntity> {
+  public save(link: LinkEntity): Promise<LinkEntity> {
     return this.linkRepository.save(link);
   }
 }

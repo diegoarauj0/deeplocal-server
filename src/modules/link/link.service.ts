@@ -2,7 +2,6 @@ import { ReorderConflictReferenceException } from "./exceptions/reorderConflictR
 import { InvalidContentTypeException } from "../shared/exceptions/invalidContentType.exception";
 import { ReorderTargetNotFoundException } from "./exceptions/reorderTargetNotFound.exception";
 import { UserNotLinkOwnerException } from "./exceptions/userNotLinkOwner.exception";
-import { InvalidIconKeyException } from "./exceptions/invalidIconKey.exception";
 import { IconNotFoundException } from "./exceptions/iconNotFound.exception";
 import { LinkNotFoundException } from "./exceptions/linkNotFound.exception";
 import { ReorderLinkServiceDTO } from "./dtos/reorderLink.dto";
@@ -16,6 +15,9 @@ import { LinkEntity } from "./link.entity";
 import { randomUUID } from "crypto";
 import mime from "mime-types";
 import { env } from "src/env";
+import { UploadIntentService } from "../upload/uploadIntent.service";
+import { InvalidUploadIntentException } from "../upload/exceptions/invalidUploadIntent.exception";
+import { UploadAlreadyUsedException } from "../upload/exceptions/uploadAlreadyUsed.exception";
 
 @Injectable()
 export class LinkService {
@@ -24,10 +26,11 @@ export class LinkService {
   constructor(
     private readonly linkRepository: LinkRepository,
     private readonly storageService: StorageService,
+    private readonly uploadIntentService: UploadIntentService,
   ) {}
 
   private async findLinkAndVerifyOwner(id: string, userId: string): Promise<LinkEntity> {
-    const link = await this.findLinkById(id);
+    const link = await this.linkRepository.findOneById(id);
 
     if (!link) throw new LinkNotFoundException(id);
 
@@ -37,25 +40,25 @@ export class LinkService {
   }
 
   public async deleteAllLinksByUserId(userId: string): Promise<void> {
-    const links = await this.linkRepository.findAllLinksByUserId(userId, "ASC");
+    const links = await this.linkRepository.findByUserId(userId, "ASC");
 
     const updates = links.map((link) => {
-      return this.linkRepository.deleteLink(link);
+      return this.linkRepository.delete(link);
     });
 
     await Promise.all(updates);
   }
 
-  public findLinkById(id: string): Promise<LinkEntity | null> {
-    return this.linkRepository.findLinkById(id);
+  public findOneById(id: string): Promise<LinkEntity | null> {
+    return this.linkRepository.findOneById(id);
   }
 
   private async normalizePositions(userId: string): Promise<LinkEntity[]> {
-    const links = await this.linkRepository.findAllLinksByUserId(userId, "ASC");
+    const links = await this.linkRepository.findByUserId(userId, "ASC");
 
     const updates = links.map((link, index) => {
       link.position = (index + 1) * linkConstants.POSITION_STEP;
-      return this.linkRepository.saveLink(link);
+      return this.linkRepository.save(link);
     });
 
     await Promise.all(updates);
@@ -74,7 +77,7 @@ export class LinkService {
     // If this condition is true, it means the link is trying to change position using itself as the target
     if (targetId === id) return link;
 
-    const targetLink = await this.linkRepository.findLinkById(targetId);
+    const targetLink = await this.linkRepository.findOneById(targetId);
 
     if (targetLink === null) throw new ReorderTargetNotFoundException(targetId, type);
 
@@ -84,7 +87,7 @@ export class LinkService {
 
     if (type === "before") await this.reorderBefore(link, targetLink, userId);
 
-    await this.linkRepository.saveLink(link);
+    await this.linkRepository.save(link);
 
     return link;
   }
@@ -125,7 +128,11 @@ export class LinkService {
     return link;
   }
 
-  public async createIconUploadUrl(contentType: string, id: string, userId: string): Promise<{ key: string; uploadUrl: string }> {
+  public async createIconUploadUrl(
+    contentType: string,
+    id: string,
+    userId: string,
+  ): Promise<{ uploadId: string; uploadUrl: string }> {
     await this.findLinkAndVerifyOwner(id, userId);
 
     const extension = mime.extension(contentType) as string | boolean;
@@ -140,7 +147,11 @@ export class LinkService {
       path: this.createIconPath(id, extension),
     });
 
-    return { key: presignedUrl.path, uploadUrl: presignedUrl.signedUrl };
+    const key = presignedUrl.path;
+
+    const { ID } = await this.uploadIntentService.createUploadIntent(this.ICON_BUCKET, id, key);
+
+    return { uploadUrl: presignedUrl.signedUrl, uploadId: ID };
   }
 
   private createIconPath(id: string, extension: string): string {
@@ -153,18 +164,26 @@ export class LinkService {
     if (!result) throw new IconNotFoundException(key);
   }
 
-  public async updateIconUploadUrl(linkId: string, key: string, userId: string): Promise<LinkEntity> {
-    await this.verifyIconExists(key);
+  public async updateIconUploadUrl(uploadId: string, userId: string): Promise<LinkEntity> {
+    const uploadIntent = await this.uploadIntentService.findById(uploadId);
 
-    if (!key.startsWith(`${linkId}/`)) {
-      throw new InvalidIconKeyException(key, `${linkId}/`);
+    if (!uploadIntent || uploadIntent.bucket !== this.ICON_BUCKET) {
+      throw new InvalidUploadIntentException(uploadId);
     }
 
-    const link = await this.findLinkAndVerifyOwner(linkId, userId);
+    if (uploadIntent.status !== "pending") {
+      throw new UploadAlreadyUsedException(uploadId, uploadIntent.status);
+    }
 
-    link.icon = key;
+    await this.verifyIconExists(uploadIntent.key);
 
-    await this.linkRepository.saveLink(link);
+    const link = await this.findLinkAndVerifyOwner(uploadIntent.identifier, userId);
+
+    link.icon = `${this.ICON_BUCKET}/${uploadIntent.key}`;
+
+    await this.linkRepository.save(link);
+
+    await this.uploadIntentService.completed(uploadIntent);
 
     return link;
   }
@@ -208,7 +227,7 @@ export class LinkService {
   public async deleteLink(id: string, userId: string): Promise<void> {
     const link = await this.findLinkAndVerifyOwner(id, userId);
 
-    await this.linkRepository.deleteLink(link);
+    await this.linkRepository.delete(link);
   }
 
   public async toggleLink(id: string, userId: string): Promise<LinkEntity> {
@@ -216,13 +235,13 @@ export class LinkService {
 
     link.enabled = !link.enabled;
 
-    await this.linkRepository.saveLink(link);
+    await this.linkRepository.save(link);
 
     return link;
   }
 
-  public findAllLinksByUserId(userId: string): Promise<LinkEntity[]> {
-    return this.linkRepository.findAllLinksByUserId(userId, "ASC");
+  public findByUserId(userId: string): Promise<LinkEntity[]> {
+    return this.linkRepository.findByUserId(userId, "ASC");
   }
 
   public async updateLink({ title, url, id, userId }: UpdateLinkServiceDTO): Promise<LinkEntity> {
@@ -231,7 +250,7 @@ export class LinkService {
     link.title = title ?? link.title;
     link.url = url ?? link.url;
 
-    await this.linkRepository.saveLink(link);
+    await this.linkRepository.save(link);
 
     return link;
   }
@@ -248,6 +267,6 @@ export class LinkService {
     link.title = title;
     link.url = url;
 
-    return await this.linkRepository.saveLink(link);
+    return await this.linkRepository.save(link);
   }
 }

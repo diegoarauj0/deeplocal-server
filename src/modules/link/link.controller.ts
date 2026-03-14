@@ -23,9 +23,9 @@ export class LinkController {
   @Private({ getUser: true })
   public async updateIconUrl(
     @User() user: UserEntity,
-    @Body() { key, linkId }: UpdateIconUrlBodyDTO,
+    @Body() { uploadId }: UpdateIconUrlBodyDTO,
   ): Promise<UpdateIconUrlSuccessDTO> {
-    const link = await this.linkService.updateIconUploadUrl(linkId, key, user.ID);
+    const link = await this.linkService.updateIconUploadUrl(uploadId, user.ID);
 
     return { link: linkEntityToPublicLink(link) };
   }
@@ -45,7 +45,7 @@ export class LinkController {
 
   @Get(":id")
   public async getLink(@Param() { id }: LinkIdParamDTO): Promise<LinkSuccessResponseDTO> {
-    const link = await this.linkService.findLinkById(id);
+    const link = await this.linkService.findOneById(id);
 
     if (link === null) throw new LinkNotFoundException(id);
 
@@ -55,7 +55,7 @@ export class LinkController {
   @HttpCode(200)
   @Get("user/:userId")
   public async getAllLinks(@Param() { userId }: UserIdParamDTO): Promise<LinksSuccessResponseDTO> {
-    const links = await this.linkService.findAllLinksByUserId(userId);
+    const links = await this.linkService.findByUserId(userId);
 
     return { links: links.map((link) => linkEntityToPublicLink(link)), length: links.length };
   }
@@ -106,8 +106,8 @@ export class LinkController {
     @Session() session: SessionEntity,
     @Body() { contentType }: CreateIconUploadUrlDTO,
   ): Promise<CreateIconUploadUrlSuccessResponseDTO> {
-    const { key, uploadUrl } = await this.linkService.createIconUploadUrl(contentType, id, session.userId);
+    const { uploadUrl, uploadId } = await this.linkService.createIconUploadUrl(contentType, id, session.userId);
 
-    return { uploadUrl, key };
+    return { uploadUrl, uploadId };
   }
 }

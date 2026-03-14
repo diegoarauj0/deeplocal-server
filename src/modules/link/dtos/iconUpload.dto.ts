@@ -12,5 +12,5 @@ export class CreateIconUploadUrlDTO {
 export class CreateIconUploadUrlSuccessResponseDTO {
   public uploadUrl: string;
 
-  public key: string;
+  public uploadId: string;
 }
