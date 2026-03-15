@@ -1,15 +1,15 @@
 import { IsIn, IsString } from "class-validator";
-import { linkConstants } from "../link.constant";
+import { USER_CONSTANT } from "../user.constant";
 import { Type } from "class-transformer";
 
-export class CreateIconUploadUrlDTO {
+export class CreateUploadUrlForAvatarBodyDTO {
   @Type(() => String)
   @IsString()
-  @IsIn(linkConstants.ICON_CONTENT_TYPE)
+  @IsIn(USER_CONSTANT.AVATAR_CONTENT_TYPE)
   public contentType: string;
 }
 
-export class CreateIconUploadUrlSuccessResponseDTO {
+export class CreateUploadUrlForAvatarSuccessResponseDTO {
   public uploadUrl: string;
 
   public uploadId: string;

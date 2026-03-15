@@ -1,7 +1,7 @@
-import { AccountEntity, AccountProvider } from "../entities/account.entity";
-import { CredentialsAccountAlreadyExistsException } from "../exceptions/credentialsAccountAlreadyExists.exception";
-import { AccountRepository } from "../repositories/account.repository";
-import { PasswordHashService } from "./passwordHash.service";
+import { CredentialsAccountAlreadyExistsException } from "../auth/exceptions/credentialsAccountAlreadyExists.exception";
+import { PasswordHashService } from "src/modules/shared/passwordHash.service";
+import { AccountEntity, AccountProvider } from "./account.entity";
+import { AccountRepository } from "./account.repository";
 import { Injectable } from "@nestjs/common";
 import { randomUUID } from "crypto";
 
@@ -11,6 +11,16 @@ export class AccountService {
     private readonly accountRepository: AccountRepository,
     private readonly passwordHashService: PasswordHashService,
   ) {}
+
+  public async deleteAllAccountsByUserId(userId: string): Promise<void> {
+    const links = await this.accountRepository.findByUserId(userId);
+
+    const updates = links.map((link) => {
+      return this.accountRepository.delete(link);
+    });
+
+    await Promise.all(updates);
+  }
 
   public async findOneCredentialsByUserId(userId: string): Promise<AccountEntity | null> {
     return await this.accountRepository.findOneCredentialsByUserId(userId);

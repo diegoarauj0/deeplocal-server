@@ -1,5 +1,5 @@
 import { InvalidTokenException } from "../exceptions/invalidToken.exception";
-import { SessionEntity } from "../entities/session.entity";
+import { SessionEntity } from "../../session/session.entity";
 import { createParamDecorator } from "@nestjs/common";
 import { Request } from "express";
 

@@ -4,7 +4,7 @@ import { RefreshHeaderDTO, RefreshSuccessDTO } from "./dtos/refresh.dto";
 import { SignInBodyDTO, SignInSuccessDTO } from "./dtos/signIn.dto";
 import { SignUpBodyDTO, SignUpSuccessDTO } from "./dtos/signUp.dto";
 import { userEntityToPrivateUser } from "../user/user.mapper";
-import { SessionEntity } from "./entities/session.entity";
+import { SessionEntity } from "../session/session.entity";
 import { Session } from "./decorators/session.decorator";
 import { Private } from "./decorators/private.decorator";
 import { LogoutAllBodyDTO } from "./dtos/logoutAll.dto";

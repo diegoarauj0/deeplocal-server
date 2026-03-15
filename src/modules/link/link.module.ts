@@ -1,15 +1,17 @@
+import { TypeOrmModule } from "@nestjs/typeorm";
 import { DatabaseModule } from "../database/database.module";
 import { StorageModule } from "../storage/storage.module";
+import { UploadModule } from "../upload/upload.module";
 import { LinkController } from "./link.controller";
+import { LinkRepository } from "./link.repository";
 import { LinkService } from "./link.service";
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
 import { LinkEntity } from "./link.entity";
-import { LinkRepository } from "./link.repository";
-import { UploadModule } from "../upload/upload.module";
+
+const linkEntityRepository = TypeOrmModule.forFeature([LinkEntity]);
 
 @Module({
-  imports: [DatabaseModule, StorageModule, UploadModule, TypeOrmModule.forFeature([LinkEntity])],
+  imports: [DatabaseModule, StorageModule, UploadModule, linkEntityRepository],
   providers: [LinkRepository, LinkService],
   controllers: [LinkController],
   exports: [LinkService],

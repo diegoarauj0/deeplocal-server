@@ -10,7 +10,7 @@ export class PublicLinkDTO {
   @Expose()
   public url: LinkEntity["url"];
   @Expose()
-  @Transform(({ value }) => (value ? `${env.SUPABASE_URL}/storage/v1/object/public/icons/${value}` : null))
+  @Transform(({ value }) => (value ? `${env.SUPABASE_URL}/storage/v1/object/public/${env.ICON_BUCKET}/${value}` : null))
   public icon: LinkEntity["icon"];
   @Expose()
   public enabled: LinkEntity["enabled"];

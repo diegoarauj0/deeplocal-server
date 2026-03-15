@@ -1,5 +1,6 @@
-import { Expose, plainToInstance } from "class-transformer";
+import { Expose, plainToInstance, Transform } from "class-transformer";
 import { UserEntity } from "./user.entity";
+import { env } from "src/env";
 
 export class PublicUserDTO {
   @Expose()
@@ -12,6 +13,16 @@ export class PublicUserDTO {
   public updatedAt: UserEntity["updatedAt"];
   @Expose()
   public ID: UserEntity["ID"];
+  @Expose()
+  public color: UserEntity["color"];
+  @Expose()
+  public bio: UserEntity["bio"];
+  @Expose()
+  @Transform(({ value }) => (value ? `${env.SUPABASE_URL}/storage/v1/object/public/${env.AVATAR_BUCKET}/${value}` : null))
+  public avatar: UserEntity["avatar"];
+  @Expose()
+  @Transform(({ value }) => (value ? `${env.SUPABASE_URL}/storage/v1/object/public/${env.BACKGROUND_BUCKET}/${value}` : null))
+  public background: UserEntity["background"];
 }
 
 export class PrivateUserDTO extends PublicUserDTO {

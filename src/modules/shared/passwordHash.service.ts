@@ -1,5 +1,5 @@
+import { AUTH_CONSTANT } from "../auth/auth.constant";
 import { Injectable } from "@nestjs/common";
-import { AUTH_CONSTANT } from "../auth.constant";
 import bcrypt from "bcryptjs";
 
 @Injectable()

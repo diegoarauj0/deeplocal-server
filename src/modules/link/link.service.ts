@@ -9,7 +9,7 @@ import { CreateLinkServiceDTO } from "./dtos/createLink.dto";
 import { UpdateLinkServiceDTO } from "./dtos/updateLink.dto";
 import { StorageService } from "../storage/storage.service";
 import { LinkRepository } from "./link.repository";
-import { linkConstants } from "./link.constant";
+import { LINK_CONSTANT } from "./link.constant";
 import { Injectable } from "@nestjs/common";
 import { LinkEntity } from "./link.entity";
 import { randomUUID } from "crypto";
@@ -57,7 +57,7 @@ export class LinkService {
     const links = await this.linkRepository.findByUserId(userId, "ASC");
 
     const updates = links.map((link, index) => {
-      link.position = (index + 1) * linkConstants.POSITION_STEP;
+      link.position = (index + 1) * LINK_CONSTANT.POSITION_STEP;
       return this.linkRepository.save(link);
     });
 
@@ -96,14 +96,14 @@ export class LinkService {
     let afterLink = await this.linkRepository.findNextLinkByPosition(targetLink.position, userId);
 
     if (afterLink === null) {
-      let gap = targetLink.position + linkConstants.POSITION_STEP;
+      let gap = targetLink.position + LINK_CONSTANT.POSITION_STEP;
 
-      if (Math.abs(gap) >= linkConstants.MAX_POSITION_VALUE) {
+      if (Math.abs(gap) >= LINK_CONSTANT.MAX_POSITION_VALUE) {
         const newLinks = await this.normalizePositions(userId);
 
         targetLink = newLinks.filter(({ ID }) => ID === targetLink.ID)[0];
 
-        gap = targetLink.position + linkConstants.POSITION_STEP;
+        gap = targetLink.position + LINK_CONSTANT.POSITION_STEP;
       }
 
       link.position = gap;
@@ -113,7 +113,7 @@ export class LinkService {
 
       let gap = (targetLink.position + afterLink.position) / 2;
 
-      if (Math.abs(gap) <= linkConstants.MIN_POSITION_GAP) {
+      if (Math.abs(gap) <= LINK_CONSTANT.MIN_POSITION_GAP) {
         const newLinks = await this.normalizePositions(userId);
 
         afterLink = newLinks.find(({ ID }) => ID === afterLink?.ID)!;
@@ -135,10 +135,12 @@ export class LinkService {
   ): Promise<{ uploadId: string; uploadUrl: string }> {
     await this.findLinkAndVerifyOwner(id, userId);
 
+    await this.uploadIntentService.revokeAllPendingStatus(id, this.ICON_BUCKET);
+
     const extension = mime.extension(contentType) as string | boolean;
 
     if (typeof extension !== "string") {
-      throw new InvalidContentTypeException(contentType, linkConstants.ICON_CONTENT_TYPE);
+      throw new InvalidContentTypeException(contentType, LINK_CONSTANT.ICON_CONTENT_TYPE);
     }
 
     const presignedUrl = await this.storageService.createPresignedUploadUrl({
@@ -179,6 +181,13 @@ export class LinkService {
 
     const link = await this.findLinkAndVerifyOwner(uploadIntent.identifier, userId);
 
+    if (link.icon !== null) {
+      await this.storageService.deleteFile({
+        bucket: this.ICON_BUCKET,
+        path: link.icon.replace(`${this.ICON_BUCKET}/`, ""),
+      });
+    }
+
     link.icon = `${this.ICON_BUCKET}/${uploadIntent.key}`;
 
     await this.linkRepository.save(link);
@@ -192,14 +201,14 @@ export class LinkService {
     let beforeLink = await this.linkRepository.findPreviousLinkByPosition(targetLink.position, userId);
 
     if (beforeLink === null) {
-      let gap = targetLink.position - linkConstants.POSITION_STEP;
+      let gap = targetLink.position - LINK_CONSTANT.POSITION_STEP;
 
-      if (Math.abs(gap) >= linkConstants.MAX_POSITION_VALUE) {
+      if (Math.abs(gap) >= LINK_CONSTANT.MAX_POSITION_VALUE) {
         const newLinks = await this.normalizePositions(userId);
 
         targetLink = newLinks.filter(({ ID }) => ID === targetLink.ID)[0];
 
-        gap = targetLink.position - linkConstants.POSITION_STEP;
+        gap = targetLink.position - LINK_CONSTANT.POSITION_STEP;
       }
 
       link.position = gap;
@@ -209,7 +218,7 @@ export class LinkService {
 
       let gap = beforeLink.position + (targetLink.position - beforeLink.position) / 2;
 
-      if (Math.abs(gap) <= linkConstants.MIN_POSITION_GAP) {
+      if (Math.abs(gap) <= LINK_CONSTANT.MIN_POSITION_GAP) {
         const newLinks = await this.normalizePositions(userId);
 
         beforeLink = newLinks.find(({ ID }) => ID === beforeLink?.ID)!;
@@ -260,7 +269,7 @@ export class LinkService {
 
     const lastLink = await this.linkRepository.findLastLinkByUserId(userId);
 
-    link.position = lastLink === null ? linkConstants.POSITION_STEP : lastLink.position + linkConstants.POSITION_STEP;
+    link.position = lastLink === null ? LINK_CONSTANT.POSITION_STEP : lastLink.position + LINK_CONSTANT.POSITION_STEP;
     link.ID = randomUUID();
     link.userId = userId;
     link.enabled = true;

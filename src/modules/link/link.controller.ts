@@ -3,14 +3,14 @@ import { CreateLinkDTO } from "./dtos/createLink.dto";
 import { UpdateLinkDTO } from "./dtos/updateLink.dto";
 import { LinkIdParamDTO, UserIdParamDTO } from "./dtos/params.dto";
 import { LinkSuccessResponseDTO, LinksSuccessResponseDTO } from "./dtos/response.dto";
-import { CreateIconUploadUrlDTO, CreateIconUploadUrlSuccessResponseDTO } from "./dtos/iconUpload.dto";
+import { CreateUploadUrlForIconBodyDTO, CreateUploadUrlForIconSuccessResponseDTO } from "./dtos/createUploadUrlForIcon.dto";
 import { UpdateIconUrlBodyDTO, UpdateIconUrlSuccessDTO } from "./dtos/updateIconUrl.dto";
 import { ReorderLinkDTO } from "./dtos/reorderLink.dto";
 import { LinkNotFoundException } from "./exceptions/linkNotFound.exception";
 import { LinkService } from "./link.service";
 import { linkEntityToPublicLink } from "./link.mapper";
 import { Private } from "../auth/decorators/private.decorator";
-import { SessionEntity } from "../auth/entities/session.entity";
+import { SessionEntity } from "../session/session.entity";
 import { User } from "../auth/decorators/user.decorator";
 import { UserEntity } from "../user/user.entity";
 
@@ -104,8 +104,8 @@ export class LinkController {
   public async createIconUploadUrl(
     @Param() { id }: LinkIdParamDTO,
     @Session() session: SessionEntity,
-    @Body() { contentType }: CreateIconUploadUrlDTO,
-  ): Promise<CreateIconUploadUrlSuccessResponseDTO> {
+    @Body() { contentType }: CreateUploadUrlForIconBodyDTO,
+  ): Promise<CreateUploadUrlForIconSuccessResponseDTO> {
     const { uploadUrl, uploadId } = await this.linkService.createIconUploadUrl(contentType, id, session.userId);
 
     return { uploadUrl, uploadId };

@@ -49,6 +49,14 @@ class EnvConfig {
   @Type(() => String)
   @IsString()
   public ICON_BUCKET: string;
+
+  @Type(() => String)
+  @IsString()
+  public AVATAR_BUCKET: string;
+
+  @Type(() => String)
+  @IsString()
+  public BACKGROUND_BUCKET: string;
 }
 
 function loadEnv() {
@@ -60,7 +68,9 @@ function loadEnv() {
     NODE_ENV: process.env.NODE_ENV || "production",
     PORT: process.env.PORT || 3000,
     ORIGIN: process.env.ORIGIN,
+    AVATAR_BUCKET: process.env.AVATAR_BUCKET || "avatars",
     ICON_BUCKET: process.env.ICON_BUCKET || "icons",
+    BACKGROUND_BUCKET: process.env.BACKGROUND_BUCKET || "backgrounds",
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   };

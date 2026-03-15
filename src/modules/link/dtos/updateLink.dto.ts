@@ -1,5 +1,5 @@
 import { IsOptional, IsString, Length, IsUrl } from "class-validator";
-import { linkConstants } from "../link.constant";
+import { LINK_CONSTANT } from "../link.constant";
 import { Type } from "class-transformer";
 
 const URL_MAX_LENGTH = 2048;
@@ -8,7 +8,7 @@ export class UpdateLinkDTO {
   @Type(() => String)
   @IsOptional()
   @IsString()
-  @Length(linkConstants.TITLE_MIN_LENGTH, linkConstants.TITLE_MAX_LENGTH)
+  @Length(LINK_CONSTANT.TITLE_MIN_LENGTH, LINK_CONSTANT.TITLE_MAX_LENGTH)
   public title?: string;
 
   @Type(() => String)

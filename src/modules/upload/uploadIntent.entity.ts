@@ -1,6 +1,6 @@
 import { Entity, Column, ObjectIdColumn, PrimaryColumn, Index, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
-export type UploadIntentStatus = "pending" | "completed";
+export type UploadIntentStatus = "pending" | "completed" | "canceled";
 
 @Entity({ name: "uploadIntents" })
 export class UploadIntentEntity {

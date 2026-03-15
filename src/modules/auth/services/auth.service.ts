@@ -1,13 +1,13 @@
 import { InvalidCredentialException } from "../exceptions/invalidCredentials.exception";
 import { InvalidTokenException } from "../exceptions/invalidToken.exception";
-import { PasswordHashService } from "./passwordHash.service";
 import { UserService } from "src/modules/user/user.service";
+import { SessionEntity } from "../../session/session.entity";
 import { UserEntity } from "src/modules/user/user.entity";
-import { SessionService } from "./session.service";
-import { AccountService } from "./account.service";
 import { TokenService } from "./token.service";
 import { Injectable } from "@nestjs/common";
-import { SessionEntity } from "../entities/session.entity";
+import { PasswordHashService } from "src/modules/shared/passwordHash.service";
+import { SessionService } from "src/modules/session/session.service";
+import { AccountService } from "src/modules/account/account.service";
 
 interface ISignIn {
   userAgent: string;
@@ -85,7 +85,7 @@ export class AuthService {
 
     if (session === null) return;
 
-    await this.sessionService.findByUserIdAndDelete(session.userId, sessionId, deleteCurrentSession);
+    await this.sessionService.deleteAllSessionsByUserId(session.userId, deleteCurrentSession ? session : undefined);
   }
 
   public async logout(sessionId: string): Promise<void> {
@@ -93,7 +93,7 @@ export class AuthService {
 
     if (session === null) return;
 
-    await this.sessionService.delete(session);
+    await this.sessionService.deleteSession(session);
   }
 
   public async refresh(_refresh: string): Promise<IRefreshSuccess> {

@@ -1,8 +1,8 @@
-import { SessionRepository } from "../repositories/session.repository";
-import { SessionEntity } from "../entities/session.entity";
 import { Injectable } from "@nestjs/common";
 import { randomUUID } from "crypto";
 import { env } from "src/env";
+import { SessionRepository } from "./session.repository";
+import { SessionEntity } from "./session.entity";
 
 @Injectable()
 export class SessionService {
@@ -10,7 +10,7 @@ export class SessionService {
 
   constructor(private readonly sessionRepository: SessionRepository) {}
 
-  public async delete(session: SessionEntity): Promise<void> {
+  public async deleteSession(session: SessionEntity): Promise<void> {
     await this.sessionRepository.delete(session);
   }
 
@@ -18,10 +18,12 @@ export class SessionService {
     return this.sessionRepository.findOneById(id);
   }
 
-  public async findByUserIdAndDelete(userId: string, sessionId: string, deleteCurrentSession: boolean): Promise<void> {
+  public async deleteAllSessionsByUserId(userId: string, deleteCurrentSession?: SessionEntity): Promise<void> {
     const sessions = await this.sessionRepository.findByUserId(userId);
 
-    const filteredSession = sessions.filter((session) => (deleteCurrentSession ? true : session.ID !== sessionId));
+    const filteredSession = sessions.filter((session) =>
+      deleteCurrentSession === undefined ? true : session.ID !== deleteCurrentSession.ID,
+    );
 
     for (const session of filteredSession) {
       await this.sessionRepository.delete(session);
