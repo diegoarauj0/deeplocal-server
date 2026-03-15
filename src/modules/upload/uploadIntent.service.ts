@@ -1,9 +1,11 @@
+import { InvalidContentTypeException } from "./exceptions/invalidContentType.exception";
 import { UploadIntentRepository } from "./uploadIntent.repository";
 import { StorageService } from "../storage/storage.service";
 import { UploadIntentEntity } from "./uploadIntent.entity";
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
 import { randomUUID } from "crypto";
+import mime from "mime-types";
 
 @Injectable()
 export class UploadIntentService {
@@ -98,8 +100,8 @@ export class UploadIntentService {
     this.logger.log(`Upload cleanup finished: ${deletedFiles} files removed, ${deletedIntents} intents deleted`);
   }
 
-  public findById(id: string): Promise<UploadIntentEntity | null> {
-    return this.uploadIntentRepository.findById(id);
+  public findOneById(id: string): Promise<UploadIntentEntity | null> {
+    return this.uploadIntentRepository.findOneById(id);
   }
 
   public async deleteAllUploadsIntentByIdentifier(identifier: string, bucket: string): Promise<void> {
@@ -136,5 +138,30 @@ export class UploadIntentService {
     uploadIntent.ID = randomUUID();
 
     return await this.uploadIntentRepository.save(uploadIntent);
+  }
+
+  public async createUploadUrl(identifier: string, contentType: string, bucket: string, allowedContentTypes: string[]) {
+    await this.revokeAllPendingStatus(identifier, bucket);
+
+    const extension = mime.extension(contentType);
+
+    if (!extension || allowedContentTypes.indexOf(extension) === -1) {
+      throw new InvalidContentTypeException(contentType, allowedContentTypes);
+    }
+
+    const path = `${identifier}/${randomUUID()}.${extension}`;
+
+    const presigned = await this.storageService.createPresignedUploadUrl({
+      bucket: bucket,
+      contentType: contentType,
+      path: path,
+    });
+
+    const { ID } = await this.createUploadIntent(bucket, identifier, presigned.path);
+
+    return {
+      uploadUrl: presigned.signedUrl,
+      uploadId: ID,
+    };
   }
 }

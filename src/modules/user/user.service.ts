@@ -4,8 +4,6 @@ import { UserRepository } from "./user.repository";
 import { Injectable } from "@nestjs/common";
 import { randomUUID } from "crypto";
 import { UserNotFoundException } from "./exceptions/userNotFound.exception";
-import mime from "mime-types";
-import { InvalidContentTypeException } from "../shared/exceptions/invalidContentType.exception";
 import { BaseException } from "../shared/exceptions/base.exception";
 import { USER_CONSTANT } from "./user.constant";
 import { StorageService } from "../storage/storage.service";
@@ -15,7 +13,6 @@ import { AvatarNotFoundException } from "./exceptions/iconNotFound.exception";
 import { BackgroundNotFoundException } from "./exceptions/backgroundNotFound.exception";
 import { InvalidUploadIntentException } from "../upload/exceptions/invalidUploadIntent.exception";
 import { UploadAlreadyUsedException } from "../upload/exceptions/uploadAlreadyUsed.exception";
-import { IdentifierMismatchException } from "../upload/exceptions/identifierMismatch.exception";
 import { UpdateUserServiceDTO } from "./dtos/updateUser.dto";
 import { UserEntity } from "./user.entity";
 
@@ -43,59 +40,33 @@ export class UserService {
   }
 
   public async createAvatarUploadUrl(contentType: string, id: string): Promise<{ uploadId: string; uploadUrl: string }> {
-    await this.uploadIntentService.revokeAllPendingStatus(id, this.AVATAR_BUCKET);
-
     const user = await this.userRepository.findOneById(id);
 
     if (user === null) throw new UserNotFoundException(id);
 
-    const extension = mime.extension(contentType) as string | boolean;
+    const { uploadId, uploadUrl } = await this.uploadIntentService.createUploadUrl(
+      id,
+      contentType,
+      this.AVATAR_BUCKET,
+      USER_CONSTANT.AVATAR_CONTENT_TYPE,
+    );
 
-    if (typeof extension !== "string") {
-      throw new InvalidContentTypeException(contentType, USER_CONSTANT.AVATAR_CONTENT_TYPE);
-    }
-
-    const presignedUrl = await this.storageService.createPresignedUploadUrl({
-      bucket: this.AVATAR_BUCKET,
-      contentType: contentType,
-      path: this.createUploadPath(id, extension),
-    });
-
-    const key = presignedUrl.path;
-
-    const { ID } = await this.uploadIntentService.createUploadIntent(this.AVATAR_BUCKET, id, key);
-
-    return { uploadUrl: presignedUrl.signedUrl, uploadId: ID };
+    return { uploadId, uploadUrl };
   }
 
   public async createBackgroundUploadUrl(contentType: string, id: string): Promise<{ uploadId: string; uploadUrl: string }> {
-    await this.uploadIntentService.revokeAllPendingStatus(id, this.BACKGROUND_BUCKET);
-
     const user = await this.userRepository.findOneById(id);
 
     if (user === null) throw new UserNotFoundException(id);
 
-    const extension = mime.extension(contentType) as string | boolean;
+    const { uploadId, uploadUrl } = await this.uploadIntentService.createUploadUrl(
+      id,
+      contentType,
+      this.BACKGROUND_BUCKET,
+      USER_CONSTANT.BACKGROUND_CONTENT_TYPE,
+    );
 
-    if (typeof extension !== "string") {
-      throw new InvalidContentTypeException(contentType, USER_CONSTANT.BACKGROUND_CONTENT_TYPE);
-    }
-
-    const presignedUrl = await this.storageService.createPresignedUploadUrl({
-      bucket: this.BACKGROUND_BUCKET,
-      contentType: contentType,
-      path: this.createUploadPath(id, extension),
-    });
-
-    const key = presignedUrl.path;
-
-    const { ID } = await this.uploadIntentService.createUploadIntent(this.BACKGROUND_BUCKET, id, key);
-
-    return { uploadUrl: presignedUrl.signedUrl, uploadId: ID };
-  }
-
-  private createUploadPath(id: string, extension: string): string {
-    return `${id}/${randomUUID()}.${extension}`;
+    return { uploadId, uploadUrl };
   }
 
   private async ensureFileExists(
@@ -108,8 +79,8 @@ export class UserService {
     if (!result) throw new NotFoundException(key);
   }
 
-  public async updateAvatarUploadUrl(uploadId: string, id: string): Promise<UserEntity> {
-    const uploadIntent = await this.uploadIntentService.findById(uploadId);
+  public async updateAvatarUploadUrl(uploadId: string): Promise<UserEntity> {
+    const uploadIntent = await this.uploadIntentService.findOneById(uploadId);
 
     if (!uploadIntent || uploadIntent.bucket !== this.AVATAR_BUCKET) {
       throw new InvalidUploadIntentException(uploadId);
@@ -117,10 +88,6 @@ export class UserService {
 
     if (uploadIntent.status !== "pending") {
       throw new UploadAlreadyUsedException(uploadId, uploadIntent.status);
-    }
-
-    if (id !== uploadIntent.identifier) {
-      throw new IdentifierMismatchException(id, uploadIntent.identifier);
     }
 
     await this.ensureFileExists(uploadIntent.key, this.AVATAR_BUCKET, AvatarNotFoundException);
@@ -147,8 +114,8 @@ export class UserService {
     return user;
   }
 
-  public async updateBackgroundUploadUrl(uploadId: string, id: string): Promise<UserEntity> {
-    const uploadIntent = await this.uploadIntentService.findById(uploadId);
+  public async updateBackgroundUploadUrl(uploadId: string): Promise<UserEntity> {
+    const uploadIntent = await this.uploadIntentService.findOneById(uploadId);
 
     if (!uploadIntent || uploadIntent.bucket !== this.BACKGROUND_BUCKET) {
       throw new InvalidUploadIntentException(uploadId);
@@ -156,10 +123,6 @@ export class UserService {
 
     if (uploadIntent.status !== "pending") {
       throw new UploadAlreadyUsedException(uploadId, uploadIntent.status);
-    }
-
-    if (id !== uploadIntent.identifier) {
-      throw new IdentifierMismatchException(id, uploadIntent.identifier);
     }
 
     await this.ensureFileExists(uploadIntent.key, this.BACKGROUND_BUCKET, BackgroundNotFoundException);

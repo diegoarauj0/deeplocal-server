@@ -80,11 +80,8 @@ export class UserController {
   @HttpCode(200)
   @Patch("avatar")
   @Private({ getUser: true })
-  public async updateAvatarUploadUrl(
-    @User() { ID }: UserEntity,
-    @Body() { uploadId }: UpdateAvatarUrlBodyDTO,
-  ): Promise<UserSuccessResponseDTO> {
-    const user = await this.userService.updateAvatarUploadUrl(uploadId, ID);
+  public async updateAvatarUploadUrl(@Body() { uploadId }: UpdateAvatarUrlBodyDTO): Promise<UserSuccessResponseDTO> {
+    const user = await this.userService.updateAvatarUploadUrl(uploadId);
 
     return { user: userEntityToPublicUser(user) };
   }
@@ -104,11 +101,8 @@ export class UserController {
   @HttpCode(200)
   @Patch("background")
   @Private({ getUser: true })
-  public async updateBackgroundUploadUrl(
-    @User() { ID }: UserEntity,
-    @Body() { uploadId }: UpdateBackgroundUrlBodyDTO,
-  ): Promise<UserSuccessResponseDTO> {
-    const user = await this.userService.updateBackgroundUploadUrl(uploadId, ID);
+  public async updateBackgroundUploadUrl(@Body() { uploadId }: UpdateBackgroundUrlBodyDTO): Promise<UserSuccessResponseDTO> {
+    const user = await this.userService.updateBackgroundUploadUrl(uploadId);
 
     return { user: userEntityToPublicUser(user) };
   }

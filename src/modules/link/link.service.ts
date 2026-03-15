@@ -1,5 +1,4 @@
 import { ReorderConflictReferenceException } from "./exceptions/reorderConflictReference.exception";
-import { InvalidContentTypeException } from "../shared/exceptions/invalidContentType.exception";
 import { ReorderTargetNotFoundException } from "./exceptions/reorderTargetNotFound.exception";
 import { UserNotLinkOwnerException } from "./exceptions/userNotLinkOwner.exception";
 import { IconNotFoundException } from "./exceptions/iconNotFound.exception";
@@ -13,7 +12,6 @@ import { LINK_CONSTANT } from "./link.constant";
 import { Injectable } from "@nestjs/common";
 import { LinkEntity } from "./link.entity";
 import { randomUUID } from "crypto";
-import mime from "mime-types";
 import { env } from "src/env";
 import { UploadIntentService } from "../upload/uploadIntent.service";
 import { InvalidUploadIntentException } from "../upload/exceptions/invalidUploadIntent.exception";
@@ -135,39 +133,18 @@ export class LinkService {
   ): Promise<{ uploadId: string; uploadUrl: string }> {
     await this.findLinkAndVerifyOwner(id, userId);
 
-    await this.uploadIntentService.revokeAllPendingStatus(id, this.ICON_BUCKET);
+    const { uploadId, uploadUrl } = await this.uploadIntentService.createUploadUrl(
+      id,
+      contentType,
+      this.ICON_BUCKET,
+      LINK_CONSTANT.ICON_CONTENT_TYPE,
+    );
 
-    const extension = mime.extension(contentType) as string | boolean;
-
-    if (typeof extension !== "string") {
-      throw new InvalidContentTypeException(contentType, LINK_CONSTANT.ICON_CONTENT_TYPE);
-    }
-
-    const presignedUrl = await this.storageService.createPresignedUploadUrl({
-      bucket: this.ICON_BUCKET,
-      contentType: contentType,
-      path: this.createIconPath(id, extension),
-    });
-
-    const key = presignedUrl.path;
-
-    const { ID } = await this.uploadIntentService.createUploadIntent(this.ICON_BUCKET, id, key);
-
-    return { uploadUrl: presignedUrl.signedUrl, uploadId: ID };
+    return { uploadId, uploadUrl };
   }
 
-  private createIconPath(id: string, extension: string): string {
-    return `${id}/${randomUUID()}.${extension}`;
-  }
-
-  public async verifyIconExists(key: string): Promise<void> {
-    const result = await this.storageService.verifyFileExists(key, this.ICON_BUCKET);
-
-    if (!result) throw new IconNotFoundException(key);
-  }
-
-  public async updateIconUploadUrl(uploadId: string, userId: string): Promise<LinkEntity> {
-    const uploadIntent = await this.uploadIntentService.findById(uploadId);
+  public async updateIconUploadUrl(uploadId: string): Promise<LinkEntity> {
+    const uploadIntent = await this.uploadIntentService.findOneById(uploadId);
 
     if (!uploadIntent || uploadIntent.bucket !== this.ICON_BUCKET) {
       throw new InvalidUploadIntentException(uploadId);
@@ -177,9 +154,15 @@ export class LinkService {
       throw new UploadAlreadyUsedException(uploadId, uploadIntent.status);
     }
 
-    await this.verifyIconExists(uploadIntent.key);
+    const result = await this.storageService.verifyFileExists(uploadIntent.key, this.ICON_BUCKET);
 
-    const link = await this.findLinkAndVerifyOwner(uploadIntent.identifier, userId);
+    if (!result) throw new IconNotFoundException(uploadIntent.key);
+
+    const link = await this.linkRepository.findOneById(uploadIntent.identifier);
+
+    if (link === null) {
+      throw new LinkNotFoundException(uploadIntent.identifier);
+    }
 
     if (link.icon !== null) {
       await this.storageService.deleteFile({

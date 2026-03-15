@@ -29,7 +29,7 @@ export class UploadIntentRepository {
     return this.uploadIntentRepository.find({ where: { identifier, status, bucket } });
   }
 
-  public findById(id: string): Promise<UploadIntentEntity | null> {
+  public findOneById(id: string): Promise<UploadIntentEntity | null> {
     return this.uploadIntentRepository.findOne({ where: { ID: id } });
   }
 

@@ -11,8 +11,6 @@ import { LinkService } from "./link.service";
 import { linkEntityToPublicLink } from "./link.mapper";
 import { Private } from "../auth/decorators/private.decorator";
 import { SessionEntity } from "../session/session.entity";
-import { User } from "../auth/decorators/user.decorator";
-import { UserEntity } from "../user/user.entity";
 
 @Controller("api/links")
 export class LinkController {
@@ -21,11 +19,8 @@ export class LinkController {
   @Patch("icon")
   @HttpCode(200)
   @Private({ getUser: true })
-  public async updateIconUrl(
-    @User() user: UserEntity,
-    @Body() { uploadId }: UpdateIconUrlBodyDTO,
-  ): Promise<UpdateIconUrlSuccessDTO> {
-    const link = await this.linkService.updateIconUploadUrl(uploadId, user.ID);
+  public async updateIconUrl(@Body() { uploadId }: UpdateIconUrlBodyDTO): Promise<UpdateIconUrlSuccessDTO> {
+    const link = await this.linkService.updateIconUploadUrl(uploadId);
 
     return { link: linkEntityToPublicLink(link) };
   }
