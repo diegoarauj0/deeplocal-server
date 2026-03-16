@@ -20,6 +20,15 @@ import { AccountService } from "../account/account.service";
 import { SessionService } from "../session/session.service";
 import { UploadIntentService } from "../upload/uploadIntent.service";
 import { env } from "src/env";
+import {
+  ApiAcceptedResponse,
+  ApiBadRequestResponse,
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+} from "@nestjs/swagger";
 
 @Controller("api/users")
 export class UserController {
@@ -35,8 +44,16 @@ export class UserController {
   ) {}
 
   @Delete()
-  @HttpCode(HttpStatus.ACCEPTED)
   @Private({ getUser: true })
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiOperation({
+    summary: "Delete user account",
+    description:
+      "Deletes the authenticated user and all related resources including links, sessions, accounts, and pending upload intents.",
+  })
+  @ApiAcceptedResponse({
+    description: "User deletion process started successfully.",
+  })
   public deleteUser(@User() user: UserEntity): void {
     this.userService.deleteUser(user);
     this.linkService.deleteAllLinksByUserId(user.ID);
@@ -46,8 +63,19 @@ export class UserController {
     this.uploadIntentService.deleteAllUploadsIntentByIdentifier(user.ID, this.BACKGROUND_BUCKET);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get(":identifier")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Get user profile",
+    description: "Retrieves a user profile by user ID or username.",
+  })
+  @ApiOkResponse({
+    description: "User retrieved successfully.",
+    type: UserSuccessResponseDTO,
+  })
+  @ApiNotFoundResponse({
+    description: "User was not found.",
+  })
   public async getUser(@Param() { identifier }: GetUserParamDTO): Promise<UserSuccessResponseDTO> {
     const user = await this.userService.findOneByIdOrUsername(identifier);
 
@@ -57,17 +85,45 @@ export class UserController {
   }
 
   @Patch()
-  @HttpCode(200)
   @Private({ getUser: true })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Update user profile",
+    description: "Updates information of the authenticated user.",
+  })
+  @ApiOkResponse({
+    description: "User updated successfully.",
+    type: UserSuccessResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: "Invalid request body.",
+  })
+  @ApiNotFoundResponse({
+    description: "User was not found.",
+  })
   public async updateUser(@User() { ID }: UserEntity, @Body() data: UpdateUserBodyDTO): Promise<UserSuccessResponseDTO> {
     const user = await this.userService.updateUser({ ...data, id: ID });
 
     return { user: userEntityToPublicUser(user) };
   }
 
-  @HttpCode(201)
   @Post("avatar/upload-url")
   @Private({ getUser: true })
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: "Create avatar upload URL",
+    description: "Generates a temporary signed URL to upload a new user avatar.",
+  })
+  @ApiCreatedResponse({
+    description: "Upload URL generated successfully.",
+    type: CreateUploadUrlForAvatarSuccessResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: "Invalid content type or request body.",
+  })
+  @ApiNotFoundResponse({
+    description: "User was not found.",
+  })
   public async createAvatarUploadUrl(
     @User() user: UserEntity,
     @Body() { contentType }: CreateUploadUrlForAvatarBodyDTO,
@@ -77,18 +133,49 @@ export class UserController {
     return { uploadUrl, uploadId };
   }
 
-  @HttpCode(200)
   @Patch("avatar")
   @Private({ getUser: true })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Confirm avatar upload",
+    description: "Associates a previously uploaded avatar file with the authenticated user using a valid uploadId.",
+  })
+  @ApiOkResponse({
+    description: "Avatar updated successfully.",
+    type: UserSuccessResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: "Invalid request body.",
+  })
+  @ApiNotFoundResponse({
+    description: "UploadId does not exist, the related file was not found, or the user does not exist.",
+  })
+  @ApiConflictResponse({
+    description: "UploadId is not in the 'pending' state.",
+  })
   public async updateAvatarUploadUrl(@Body() { uploadId }: UpdateAvatarUrlBodyDTO): Promise<UserSuccessResponseDTO> {
     const user = await this.userService.updateAvatarUploadUrl(uploadId);
 
     return { user: userEntityToPublicUser(user) };
   }
 
-  @HttpCode(201)
   @Post("background/upload-url")
   @Private({ getUser: true })
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: "Create background upload URL",
+    description: "Generates a temporary signed URL to upload a new profile background.",
+  })
+  @ApiCreatedResponse({
+    description: "Upload URL generated successfully.",
+    type: CreateUploadUrlForBackgroundSuccessResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: "Invalid content type or request body.",
+  })
+  @ApiNotFoundResponse({
+    description: "User was not found.",
+  })
   public async createBackgroundUploadUrl(
     @User() user: UserEntity,
     @Body() { contentType }: CreateUploadUrlForBackgroundBodyDTO,
@@ -98,9 +185,26 @@ export class UserController {
     return { uploadUrl, uploadId };
   }
 
-  @HttpCode(200)
   @Patch("background")
   @Private({ getUser: true })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Confirm background upload",
+    description: "Associates a previously uploaded background image with the authenticated user using a valid uploadId.",
+  })
+  @ApiOkResponse({
+    description: "Background updated successfully.",
+    type: UserSuccessResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: "Invalid request body.",
+  })
+  @ApiNotFoundResponse({
+    description: "UploadId does not exist, the uploaded file was not found, or the user does not exist.",
+  })
+  @ApiConflictResponse({
+    description: "UploadId is not in the 'pending' state.",
+  })
   public async updateBackgroundUploadUrl(@Body() { uploadId }: UpdateBackgroundUrlBodyDTO): Promise<UserSuccessResponseDTO> {
     const user = await this.userService.updateBackgroundUploadUrl(uploadId);
 
