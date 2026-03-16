@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, validateSync } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, validateSync } from "class-validator";
 import { plainToInstance, Type } from "class-transformer";
 import { randomUUID } from "crypto";
 
@@ -9,7 +9,6 @@ class EnvConfig {
 
   @Type(() => String)
   @IsString()
-  @IsUrl({ protocols: ["mongodb", "mongodb+srv"], require_port: false })
   @IsNotEmpty()
   public MONGODB: string;
 
