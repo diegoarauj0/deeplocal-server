@@ -1,98 +1,100 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# DeepLocal-server
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+![GitHub repo size](https://img.shields.io/github/repo-size/diegoarauj0/deeplocal-server?style=for-the-badge)
+![GitHub License](https://img.shields.io/github/license/diegoarauj0/deeplocal-server?style=for-the-badge)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/diegoarauj0/deeplocal-server?style=for-the-badge)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+![NodeJS](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 
-## Description
+## 📚 Visão geral
+Este projeto é uma REST API responsável pelo gerenciamento de links associados a usuários, permitindo criar, atualizar, listar e remover links de forma organizada.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Este projeto foi inspirado em plataformas como o Linktree, permitindo que usuários organizem e gerenciem múltiplos links em um único perfil.
 
-## Project setup
+## 🖥️ Tecnologias
 
-```bash
-$ npm install
-```
+- **🟨 NodeJS / 🌐 NestJS**  
+Framework utilizado para criar a API REST. O motivo da escolha foi a facilidade de integração com outros pacotes como TypeORM, CORS e Swagger, além de reduzir a necessidade de criar muitos arquivos extras de configuração.
 
-## Compile and run the project
+- **🍃MongoDB**  
+Banco de dados não relacional. Foi escolhido pela flexibilidade de modificar collections sem a necessidade de criar migrations, o que facilita alterações na estrutura dos dados durante o desenvolvimento.
 
-```bash
-# development
-$ npm run start
+- **🟩 Supabase**
+BaaS (Backend as a Service). Foi utilizado principalmente pelo sistema de storage, permitindo evitar a implementação de um sistema de upload manual. Isso elimina a necessidade de lidar com validações mais complexas, como verificação de magic bytes. Além disso, o uso de URLs assinadas reduz o consumo de banda do servidor durante uploads de backgrounds, avatares e ícones de links.
 
-# watch mode
-$ npm run start:dev
+- **🟦 TypeScript**  
+Linguagem utilizada no projeto. O TypeScript ajuda a manter o código mais organizado e seguro, adicionando tipagem estática e facilitando a manutenção do projeto.
 
-# production mode
-$ npm run start:prod
-```
+## Pré-requisitos
 
-## Run tests
+- Node.js **v24** ou superior.
+- MongoDB local ou hospedado (Atlas, MongoDB Cloud, etc.).
+- Projeto Supabase configurado para storage.
+- Variáveis de ambiente obrigatórias descritas abaixo.
+
+## 🚀 Instalação rápida
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone https://github.com/diegoarauj0/deeplocal-server.git
+cd deeplocal-server
+npm install
+cp .env.example .env.development
+# ajuste os valores obrigatórios antes de subir o servidor
 ```
 
-## Deployment
+## ✍ Environment Variables
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+O projeto utiliza variáveis de ambiente para configuração.  
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+
+⚠️ Existem dois arquivos de configuração de ambiente no projeto:
+
+- `.env.development` — utilizado durante o desenvolvimento.
+- `.env.production` — utilizado em ambiente de produção.
+
+O arquivo `.env.example` contém valores de exemplo e alguns valores públicos que podem ser expostos sem problema.
+
+Algumas variáveis possuem **valores padrão**, enquanto outras são **obrigatórias** para que o projeto seja iniciado.
+
+| Variável                    | Obrigatória | Valor padrão          | Descrição                                                                 |
+|-----------------------------|-------------|-----------------------|---------------------------------------------------------------------------|
+| `SUPABASE_URL`              | ✅ Sim      | —                     | URL pública do projeto no Supabase (Ex.: `https://xyz.supabase.co`).     |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ Sim      | —                     | Chave com permissões elevadas usada para gerar URLs e atualizar metadados(Secret keys). |
+| `MONGODB`                   | ❌ Não      | definido em `.env.example` | String de conexão com o MongoDB.                                          |
+| `REFRESH_EXPIRES_IN`        | ❌ Não      | definido em `.env.example` | Tempo (ex.: `5d`) que o refresh token permanece válido.                   |
+| `ACCESS_EXPIRES_IN`         | ❌ Não      | definido em `.env.example` | Tempo (ex.: `15m`) que o access token permanece válido.                   |
+| `SECRET`                    | ❌ Não      | definido em `.env.example` | Segredo usado para assinar JWTs.                                          |
+| `PORT`                      | ❌ Não      | definido em `.env.example` | Porta na qual o servidor escuta (padrão `3000`).                          |
+| `ICON_BUCKET`               | ❌ Não      | definido em `.env.example` | Nome do bucket do Supabase para ícones.                                   |
+| `AVATAR_BUCKET`             | ❌ Não      | definido em `.env.example` | Bucket para avatares, usado em outros fluxos se implementados.            |
+| `ORIGIN`                    | ❌ Não      | —                     | Origem permitida para o CORS.                                            |
+
+> ⚠️ Caso `SUPABASE_URL` ou `SUPABASE_SERVICE_ROLE_KEY` não sejam definidos, o servidor não será inicializado.
+ 
+
+## 🚀 Iniciar com o NodeJS em modo de produção
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm i
+npm run build
+npm run prod #o servidor vai usar o .env.production
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 🚀 Iniciar com o NodeJS em modo de desenvolvimento
 
-## Resources
+```bash
+npm i
+npm run dev #o servidor vai usar o .env.development
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## 🕮 Documentação (Swagger)
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Com o servidor rodando em `http://localhost:3000`, abra `http://localhost:3000/docs` (ou ajuste a porta definida em `.env`). Lá estão todas as rotas de `auth`, `links`, `users` e `upload` com exemplos de payloads e respostas.
 
-## Support
+Nessa rota é possível acessar a documentação das rotas da API gerada automaticamente pelo Swagger, permitindo visualizar os endpoints disponíveis e testar as requisições diretamente pelo navegador.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 📝 Licença
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Esse projeto está sob licença MIT. Veja o arquivo [LICENÇA](LICENSE.md) para mais detalhes.

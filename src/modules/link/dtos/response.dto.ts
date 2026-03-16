@@ -7,7 +7,7 @@ export class LinkSuccessResponseDTO {
   public link: PublicLinkDTO;
 }
 
-@ApiSchema({ name: "LinkSuccessResponse" })
+@ApiSchema({ name: "LinksSuccessResponse" })
 export class LinksSuccessResponseDTO {
   @ApiProperty()
   public links: PublicLinkDTO[];

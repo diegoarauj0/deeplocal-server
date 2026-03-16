@@ -21,7 +21,7 @@ class EnvConfig {
   @Type(() => String)
   @IsString()
   @IsOptional()
-  public ORIGIN: string;
+  public ORIGIN?: string;
 
   @Type(() => String)
   @IsString()
