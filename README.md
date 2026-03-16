@@ -7,6 +7,7 @@
 ![NodeJS](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 ## 📚 Visão geral
 Este projeto é uma REST API responsável pelo gerenciamento de links associados a usuários, permitindo criar, atualizar, listar e remover links de forma organizada.
@@ -33,6 +34,43 @@ Linguagem utilizada no projeto. O TypeScript ajuda a manter o código mais organ
 - MongoDB local ou hospedado (Atlas, MongoDB Cloud, etc.).
 - Projeto Supabase configurado para storage.
 - Variáveis de ambiente obrigatórias descritas abaixo.
+
+## 🗂️ Storage Buckets (Supabase)
+
+Para que o sistema de upload funcione corretamente, é necessário criar **3 buckets públicos** no Supabase Storage.
+
+Esses buckets são usados para armazenar arquivos enviados pelos usuários, como avatares, backgrounds e ícones de links.
+
+### Buckets necessários
+
+| Bucket | Variável de ambiente | Uso |
+|------|------|------|
+| `avatars` | `AVATAR_BUCKET` | Armazena avatares dos usuários |
+| `backgrounds` | `BACKGROUND_BUCKET` | Armazena backgrounds dos perfis |
+| `icons` | `ICON_BUCKET` | Armazena ícones dos links |
+
+### Configuração dos buckets
+
+Ao criar os buckets no Supabase:
+
+- O bucket **deve ser público**
+- O **tamanho máximo do arquivo** pode ser configurado livremente
+- O **MIME type permitido** pode ser configurado para aceitar imagens (image/*):
+
+> ⚠️ **Aviso:** O MIME type configurado no Supabase não é a única validação aplicada.
+>
+> O backend define explicitamente quais **Content-Types** são permitidos ao gerar a URL assinada de upload.
+>
+> Essas regras estão definidas nas seguintes constantes:
+>
+> - `user.constant.ts` → `AVATAR_CONTENT_TYPE` e `BACKGROUND_CONTENT_TYPE`
+> - `link.constant.ts` → `ICON_CONTENT_TYPE`
+>
+> Durante a geração da URL assinada, o servidor define o `Content-Type` esperado para o upload.  
+> Se o cliente tentar enviar um arquivo com um `Content-Type` diferente do especificado, o upload será rejeitado pelo storage.
+>
+> Na prática, isso impede o envio de arquivos com tipos diferentes dos permitidos pela API.
+
 
 ## 🚀 Instalação rápida
 
@@ -87,6 +125,24 @@ npm run prod #o servidor vai usar o .env.production
 ```bash
 npm i
 npm run dev #o servidor vai usar o .env.development
+```
+
+## 🐳 Docker
+
+### Desenvolvimento
+
+```bash
+docker compose up
+```
+
+### Produção
+1. Construa a imagem:
+```bash
+docker build -t deeplocal-server .
+```
+2. Execute-a:
+```bash
+docker run -p 3000:3000 deeplocal-server
 ```
 
 ## 🕮 Documentação (Swagger)

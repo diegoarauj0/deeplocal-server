@@ -154,7 +154,7 @@ export class UserService {
 
     if (user === null) throw new UserNotFoundException(id);
 
-    if (username !== undefined) {
+    if (username !== undefined && username !== user.username) {
       const userInUsername = await this.userRepository.findOneByUsername(username);
 
       if (userInUsername) throw new UsernameAlreadyInUseException(username);

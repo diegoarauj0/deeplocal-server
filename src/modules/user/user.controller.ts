@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Logger, Param, Patch, Post } from "@nestjs/common";
 import { Private } from "../auth/decorators/private.decorator";
 import { User } from "../auth/decorators/user.decorator";
 import { LinkService } from "../link/link.service";
@@ -34,6 +34,7 @@ import {
 export class UserController {
   private readonly AVATAR_BUCKET: string = env.AVATAR_BUCKET;
   private readonly BACKGROUND_BUCKET: string = env.BACKGROUND_BUCKET;
+  private readonly logger = new Logger(UserController.name);
 
   constructor(
     private readonly userService: UserService,
@@ -55,12 +56,20 @@ export class UserController {
     description: "User deletion process started successfully.",
   })
   public deleteUser(@User() user: UserEntity): void {
-    this.userService.deleteUser(user);
-    this.linkService.deleteAllLinksByUserId(user.ID);
-    this.sessionService.deleteAllSessionsByUserId(user.ID);
-    this.accountService.deleteAllAccountsByUserId(user.ID);
-    this.uploadIntentService.deleteAllUploadsIntentByIdentifier(user.ID, this.AVATAR_BUCKET);
-    this.uploadIntentService.deleteAllUploadsIntentByIdentifier(user.ID, this.BACKGROUND_BUCKET);
+    void this.cleanupUserData(user).catch((err) => {
+      this.logger.error(err);
+    });
+  }
+
+  private async cleanupUserData(user: UserEntity) {
+    await Promise.allSettled([
+      this.userService.deleteUser(user),
+      this.linkService.deleteAllLinksByUserId(user.ID),
+      this.sessionService.deleteAllSessionsByUserId(user.ID),
+      this.accountService.deleteAllAccountsByUserId(user.ID),
+      this.uploadIntentService.deleteAllUploadsIntentByIdentifier(user.ID, this.AVATAR_BUCKET),
+      this.uploadIntentService.deleteAllUploadsIntentByIdentifier(user.ID, this.BACKGROUND_BUCKET),
+    ]);
   }
 
   @Get(":identifier")
