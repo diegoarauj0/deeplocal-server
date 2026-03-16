@@ -40,10 +40,12 @@ class EnvConfig {
 
   @Type(() => String)
   @IsString()
+  @IsNotEmpty()
   public SUPABASE_URL: string;
 
   @Type(() => String)
   @IsString()
+  @IsNotEmpty()
   public SUPABASE_SERVICE_ROLE_KEY: string;
 
   @Type(() => String)
