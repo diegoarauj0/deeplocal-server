@@ -1,5 +1,5 @@
-import { UsernameAlreadyInUseException } from "../auth/exceptions/usernameAlreadyInUse.exception";
-import { EmailAlreadyInUseException } from "../auth/exceptions/emailAlreadyInUse.exception";
+import { UsernameAlreadyInUseException } from "./exceptions/usernameAlreadyInUse.exception";
+import { EmailAlreadyInUseException } from "./exceptions/emailAlreadyInUse.exception";
 import { UserRepository } from "./user.repository";
 import { Injectable } from "@nestjs/common";
 import { randomUUID } from "crypto";
@@ -153,6 +153,12 @@ export class UserService {
     const user = await this.userRepository.findOneById(id);
 
     if (user === null) throw new UserNotFoundException(id);
+
+    if (username !== undefined) {
+      const userInUsername = await this.userRepository.findOneByUsername(username);
+
+      if (userInUsername) throw new UsernameAlreadyInUseException(username);
+    }
 
     user.username = username ?? user.username;
     user.nickname = nickname ?? user.nickname;
