@@ -10,7 +10,7 @@ import { TokensDTO } from "./refresh.dto";
 export class SignInBodyDTO {
   @Type(() => String)
   @Length(USER_CONSTANT.EMAIL_LENGTH_MIN, USER_CONSTANT.EMAIL_LENGTH_MAX)
-  @IsEmail({ allow_ip_domain: false, require_tld: true, host_whitelist: USER_CONSTANT.EMAIL_HOST_WHITE_LIST })
+  @IsEmail({ allow_ip_domain: false, require_tld: true })
   @IsString()
   @ApiProperty({ type: String, format: "email", required: true })
   email: string;
