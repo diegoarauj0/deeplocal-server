@@ -17,6 +17,6 @@ export class StorageInternalException extends BaseException<IStorageInternalDeta
     const isProduction = env.NODE_ENV === "production";
     const sanitizedReason: StorageInternalDetailsReason = isProduction ? "PRIVATE" : reason;
 
-    super("Storage operation failed", { reason: sanitizedReason }, "STORAGE_INTERNAL_ERROR", "INTERNAL_SERVER_ERROR");
+    super("Storage operation failed", { reason: sanitizedReason }, "STORAGE_INTERNAL_ERROR_EXCEPTION", "INTERNAL_SERVER_ERROR");
   }
 }

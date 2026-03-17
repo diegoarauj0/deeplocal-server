@@ -6,6 +6,6 @@ export interface ILinkNotFound {
 
 export class LinkNotFoundException extends BaseException<ILinkNotFound> {
   constructor(id: string) {
-    super("link not found.", { linkId: id }, "LINK_NOT_FOUND", "NOT_FOUND");
+    super("link not found.", { linkId: id }, "LINK_NOT_FOUND_EXCEPTION", "NOT_FOUND");
   }
 }

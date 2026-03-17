@@ -7,6 +7,6 @@ interface IInvalidContentTypeDetails {
 
 export class InvalidContentTypeException extends BaseException<IInvalidContentTypeDetails> {
   constructor(contentType: string, acceptedContentTypes: string[]) {
-    super("invalid content type.", { acceptedContentTypes, contentType }, "INVALID_CONTENT_TYPE", "BAD_REQUEST");
+    super("invalid content type.", { acceptedContentTypes, contentType }, "INVALID_CONTENT_TYPE_EXCEPTION", "BAD_REQUEST");
   }
 }

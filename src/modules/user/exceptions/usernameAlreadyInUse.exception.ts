@@ -6,6 +6,6 @@ interface IUsernameAlreadyInUseDetails {
 
 export class UsernameAlreadyInUseException extends BaseException<IUsernameAlreadyInUseDetails> {
   constructor(username: string) {
-    super("The provided username is already in use.", { username }, "USERNAME_ALREADY_IN_USE", "CONFLICT");
+    super("The provided username is already in use.", { username }, "USERNAME_ALREADY_IN_USE_EXCEPTION", "CONFLICT");
   }
 }

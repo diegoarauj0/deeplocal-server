@@ -5,7 +5,7 @@ export class CredentialsAccountAlreadyExistsException extends BaseException<unde
     super(
       "A credentials account already exists for this user.",
       undefined,
-      "CREDENTIAL_ACCOUNT_ALREADY_EXISTS",
+      "CREDENTIAL_ACCOUNT_ALREADY_EXISTS_EXCEPTION",
       "INTERNAL_SERVER_ERROR",
     );
   }

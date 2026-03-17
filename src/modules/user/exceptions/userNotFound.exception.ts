@@ -6,6 +6,6 @@ interface IUserNotFoundDetails {
 
 export class UserNotFoundException extends BaseException<IUserNotFoundDetails> {
   constructor(userId: string) {
-    super("user not found.", { userId }, "USER_NOT_FOUND", "NOT_FOUND");
+    super("user not found.", { userId }, "USER_NOT_FOUND_EXCEPTION", "NOT_FOUND");
   }
 }

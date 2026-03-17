@@ -6,6 +6,6 @@ interface IBackgroundNotFoundDetails {
 
 export class BackgroundNotFoundException extends BaseException<IBackgroundNotFoundDetails> {
   constructor(key: string) {
-    super("background file not found.", { key }, "BACKGROUND_NOT_FOUND", "NOT_FOUND");
+    super("background file not found.", { key }, "BACKGROUND_NOT_FOUND_EXCEPTION", "NOT_FOUND");
   }
 }

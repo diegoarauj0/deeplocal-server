@@ -6,6 +6,11 @@ interface IInvalidUploadIntentDetails {
 
 export class InvalidUploadIntentException extends BaseException<IInvalidUploadIntentDetails> {
   constructor(uploadId: string) {
-    super(`Upload intent '${uploadId}' is invalid or does not exist`, { uploadId }, "INVALID_UPLOAD_INTENT", "NOT_FOUND");
+    super(
+      `Upload intent '${uploadId}' is invalid or does not exist`,
+      { uploadId },
+      "INVALID_UPLOAD_INTENT_EXCEPTION",
+      "NOT_FOUND",
+    );
   }
 }

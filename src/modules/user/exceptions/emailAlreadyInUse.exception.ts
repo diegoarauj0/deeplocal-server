@@ -6,6 +6,6 @@ interface IEmailAlreadyInUseDetails {
 
 export class EmailAlreadyInUseException extends BaseException<IEmailAlreadyInUseDetails> {
   constructor(email: string) {
-    super("The provided email is already in use.", { email }, "EMAIL_ALREADY_IN_USE", "CONFLICT");
+    super("The provided email is already in use.", { email }, "EMAIL_ALREADY_IN_USE_EXCEPTION", "CONFLICT");
   }
 }
