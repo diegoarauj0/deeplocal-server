@@ -171,7 +171,7 @@ export class LinkService {
       });
     }
 
-    link.icon = `${this.ICON_BUCKET}/${uploadIntent.key}`;
+    link.icon = uploadIntent.key;
 
     await this.linkRepository.save(link);
 

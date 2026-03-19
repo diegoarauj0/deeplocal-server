@@ -145,7 +145,7 @@ export class UploadIntentService {
 
     const extension = mime.extension(contentType);
 
-    if (!extension || allowedContentTypes.indexOf(extension) === -1) {
+    if (!extension || allowedContentTypes.indexOf(contentType) === -1) {
       throw new InvalidContentTypeException(contentType, allowedContentTypes);
     }
 

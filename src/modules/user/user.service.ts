@@ -105,7 +105,7 @@ export class UserService {
       });
     }
 
-    user.avatar = `${this.AVATAR_BUCKET}/${uploadIntent.key}`;
+    user.avatar = uploadIntent.key;
 
     await this.userRepository.save(user);
 
@@ -140,7 +140,7 @@ export class UserService {
       });
     }
 
-    user.background = `${this.BACKGROUND_BUCKET}/${uploadIntent.key}`;
+    user.background = uploadIntent.key;
 
     await this.userRepository.save(user);
 
