@@ -50,7 +50,7 @@ export class UploadIntentService {
   public async cleanupCompletedUploads() {
     this.logger.log("Starting completed upload intent cleanup job");
 
-    const completed = await this.uploadIntentRepository.findByStatus("success");
+    const completed = await this.uploadIntentRepository.findByStatus("completed");
 
     this.logger.log(`Found ${completed.length} completed upload intents`);
 
@@ -66,38 +66,6 @@ export class UploadIntentService {
     }
 
     this.logger.log(`Completed upload cleanup finished: ${deletedIntents} intents deleted`);
-  }
-
-  @Cron("*/10 * * * *")
-  public async cleanupUploads() {
-    this.logger.log("Starting upload cleanup job");
-
-    const expired = await this.uploadIntentRepository.findExpired(new Date());
-
-    this.logger.log(`Found ${expired.length} expired pending upload intents`);
-
-    let deletedFiles = 0;
-    let deletedIntents = 0;
-
-    for (const intent of expired) {
-      try {
-        await this.storageService.deleteFile({
-          path: intent.key,
-          bucket: intent.bucket,
-        });
-
-        deletedFiles++;
-
-        if (intent.status === "pending" || intent.status === "canceled") {
-          await this.uploadIntentRepository.delete(intent);
-          deletedIntents++;
-        }
-      } catch (err) {
-        this.logger.error(`Failed to cleanup upload intent ${intent.ID}`, err);
-      }
-    }
-
-    this.logger.log(`Upload cleanup finished: ${deletedFiles} files removed, ${deletedIntents} intents deleted`);
   }
 
   public findOneById(id: string): Promise<UploadIntentEntity | null> {

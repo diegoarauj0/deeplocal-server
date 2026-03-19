@@ -39,10 +39,8 @@ export class UploadIntentRepository {
     });
   }
 
-  public findByStatus(status: string): Promise<UploadIntentEntity[]> {
-    return this.uploadIntentRepository.find({
-      where: { status },
-    });
+  public findByStatus(status: UploadIntentStatus): Promise<UploadIntentEntity[]> {
+    return this.uploadIntentRepository.find({ where: { status: status } });
   }
 
   public findExpiredByStatus(status: UploadIntentStatus[], now: Date): Promise<UploadIntentEntity[]> {
