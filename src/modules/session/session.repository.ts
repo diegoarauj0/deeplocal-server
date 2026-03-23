@@ -24,6 +24,6 @@ export class SessionRepository {
   }
 
   public delete(session: SessionEntity): Promise<DeleteResult> {
-    return this.sessionRepository.delete(session);
+    return this.sessionRepository.delete({ ID: session.ID });
   }
 }

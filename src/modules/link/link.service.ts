@@ -44,7 +44,7 @@ export class LinkService {
       return this.linkRepository.delete(link);
     });
 
-    await Promise.all(updates);
+    await Promise.allSettled(updates);
   }
 
   public findOneById(id: string): Promise<LinkEntity | null> {

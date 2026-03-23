@@ -62,14 +62,48 @@ export class UserController {
   }
 
   private async cleanupUserData(user: UserEntity) {
-    await Promise.allSettled([
-      this.userService.deleteUser(user),
-      this.linkService.deleteAllLinksByUserId(user.ID),
-      this.sessionService.deleteAllSessionsByUserId(user.ID),
-      this.accountService.deleteAllAccountsByUserId(user.ID),
-      this.uploadIntentService.deleteAllUploadsIntentByIdentifier(user.ID, this.AVATAR_BUCKET),
-      this.uploadIntentService.deleteAllUploadsIntentByIdentifier(user.ID, this.BACKGROUND_BUCKET),
-    ]);
+    const isDev = env.NODE_ENV === "development";
+
+    const cleanupOperations: { label: string; action: () => Promise<unknown> }[] = [
+      {
+        label: "user record",
+        action: () => this.userService.deleteUser(user),
+      },
+      {
+        label: "links",
+        action: () => this.linkService.deleteAllLinksByUserId(user.ID),
+      },
+      {
+        label: "sessions",
+        action: () => this.sessionService.deleteAllSessionsByUserId(user.ID),
+      },
+      {
+        label: "accounts",
+        action: () => this.accountService.deleteAllAccountsByUserId(user.ID),
+      },
+      {
+        label: `avatar upload intents (bucket ${this.AVATAR_BUCKET})`,
+        action: () => this.uploadIntentService.deleteAllUploadsIntentByIdentifier(user.ID, this.AVATAR_BUCKET),
+      },
+      {
+        label: `background upload intents (bucket ${this.BACKGROUND_BUCKET})`,
+        action: () => this.uploadIntentService.deleteAllUploadsIntentByIdentifier(user.ID, this.BACKGROUND_BUCKET),
+      },
+    ];
+
+    await Promise.allSettled(
+      cleanupOperations.map(async ({ label, action }) => {
+        try {
+          if (isDev) this.logger.log(`Deleting ${label} for user ${user.ID}`);
+
+          await action();
+        } catch (err) {
+          const trace = err instanceof Error ? (err.stack ?? err.message) : String(err);
+          this.logger.error(`Cleanup failed while deleting ${label} for user ${user.ID}`, trace);
+          throw err;
+        }
+      }),
+    );
   }
 
   @Get(":identifier")
