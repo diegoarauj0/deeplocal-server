@@ -96,7 +96,7 @@ export class LinkService {
     if (afterLink === null) {
       let gap = targetLink.position + LINK_CONSTANT.POSITION_STEP;
 
-      if (Math.abs(gap) >= LINK_CONSTANT.MAX_POSITION_VALUE) {
+      if (Math.abs(gap) >= LINK_CONSTANT.MAX_POSITION) {
         const newLinks = await this.normalizePositions(userId);
 
         targetLink = newLinks.filter(({ ID }) => ID === targetLink.ID)[0];
@@ -109,9 +109,11 @@ export class LinkService {
       // If this condition is true, it means the link is already in the desired position and no change is needed
       if (afterLink.ID === link.ID) return link;
 
+      const distance = Math.abs(afterLink.position - targetLink.position);
+
       let gap = (targetLink.position + afterLink.position) / 2;
 
-      if (Math.abs(gap) <= LINK_CONSTANT.MIN_POSITION_GAP) {
+      if (distance <= LINK_CONSTANT.MIN_GAP) {
         const newLinks = await this.normalizePositions(userId);
 
         afterLink = newLinks.find(({ ID }) => ID === afterLink?.ID)!;
@@ -186,7 +188,7 @@ export class LinkService {
     if (beforeLink === null) {
       let gap = targetLink.position - LINK_CONSTANT.POSITION_STEP;
 
-      if (Math.abs(gap) >= LINK_CONSTANT.MAX_POSITION_VALUE) {
+      if (Math.abs(gap) >= LINK_CONSTANT.MAX_POSITION) {
         const newLinks = await this.normalizePositions(userId);
 
         targetLink = newLinks.filter(({ ID }) => ID === targetLink.ID)[0];
@@ -199,9 +201,11 @@ export class LinkService {
       // If this condition is true, it means the link is already in the desired position and no change is needed
       if (beforeLink.ID === link.ID) return link;
 
+      const distance = Math.abs(beforeLink.position - targetLink.position);
+
       let gap = beforeLink.position + (targetLink.position - beforeLink.position) / 2;
 
-      if (Math.abs(gap) <= LINK_CONSTANT.MIN_POSITION_GAP) {
+      if (distance <= LINK_CONSTANT.MIN_GAP) {
         const newLinks = await this.normalizePositions(userId);
 
         beforeLink = newLinks.find(({ ID }) => ID === beforeLink?.ID)!;
